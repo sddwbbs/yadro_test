@@ -2,5 +2,4 @@
 cmake-build-debug/
 cmake-build-release/
 build/
-input.txt
-output.txt
+input_1.txt

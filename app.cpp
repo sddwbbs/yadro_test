@@ -47,26 +47,42 @@ void App::read_file(const char* file_name) {
     }
 
     string line;
+    std::istringstream iss;
 
-    if (!std::getline(file, line) || !(std::istringstream(line) >> number_of_tables))
+    std::getline(file, line);
+    iss.str(line);
+    if (!(iss >> number_of_tables) || iss.peek() != EOF) {
         throw std::runtime_error("Неверные входные данные в строке: " + line);
-    if (!std::getline(file, line) || !(std::istringstream(line) >> opening_time >> closing_time))
+    }
+    iss.clear();
+
+    std::getline(file, line);
+    iss.str(line);
+    if (!(iss >> opening_time >> closing_time) || iss.peek() != EOF) {
         throw std::runtime_error("Неверные входные данные в строке: " + line);
-    if (!std::getline(file, line) || !(std::istringstream(line) >> cost_per_hour))
+    }
+    iss.clear();
+
+    std::getline(file, line);
+    iss.str(line);
+    if (!(iss >> cost_per_hour) || iss.peek() != EOF) {
         throw std::runtime_error("Неверные входные данные в строке: " + line);
+    }
+    iss.clear();
 
     opening_time_min = str_to_min(opening_time);
     closing_time_min = str_to_min(closing_time);
 
     while (std::getline(file, line)) {
-        std::istringstream iss(line);
+        iss.str(line);
         Event ev;
         if (!(iss >> ev.time >> ev.id >> ev.body))
             throw std::runtime_error("Неверные входные данные в строке: " + line);
-        if (!iss.eof() && !(iss >> ev.table_number))
+        if (!iss.eof() && !(iss >> ev.table_number) || iss.peek() != EOF)
             throw std::runtime_error("Неверные входные данные в строке: " + line);
 
         incoming_events.emplace_back(ev);
+        iss.clear();
     }
 
     file.close();
@@ -156,7 +172,7 @@ void App::handle_third_id(const Event& event) {
     }
 
     if (free_tables_exist) {
-        outgoing_events.emplace_back(event.time, 13, "ICanWaitNoLonger", -1);
+        outgoing_events.emplace_back(event.time, 13, "ICanWaitNoLonger!", -1);
         return;
     }
     if (clients_queue.size() > number_of_tables) {
@@ -197,8 +213,8 @@ void App::print_output() {
     for (const auto& event : outgoing_events) {
         std::cout << event.time << ' '
         << event.id << ' '
-        << event.body << ' '
-        << (event.table_number == -1 ? "" : std::to_string(event.table_number)) << std::endl;
+        << event.body
+        << (event.table_number == -1 ? "" : (" " + std::to_string(event.table_number))) << std::endl;
     }
     std::cout << closing_time << std::endl;
 
